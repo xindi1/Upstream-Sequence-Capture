@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#172b38">
+  <meta name="description" content="A private, local-first space to capture a developing sequence and review it later.">
+  <title>Upstream Sequence Capture Tool</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Upstream">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23172b38'/%3E%3Cpath d='M15 40h13l7-19 7 19h7' fill='none' stroke='%238fd2c8' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">⌁</span><div><strong>Upstream</strong><small>Sequence capture</small></div></div>
+      <div class="privacy-label">Private on this device</div>
+    </header>
+    <main>
+      <div class="page-heading"><div><p class="eyebrow">A moment at a time</p><h1>Capture what happened</h1></div><button class="text-button" id="todayBtn" type="button">Go to today</button></div>
+      <nav class="tabs" aria-label="Views"><button type="button" class="tab active" data-view="capture">Capture & timeline</button><button type="button" class="tab" data-view="review">Later review</button><button type="button" class="tab" data-view="data">Your data</button></nav>
+      <section id="captureView" class="view">
+        <div class="main-grid">
+          <section class="card capture-card" aria-labelledby="captureTitle">
+            <div class="card-top"><h2 id="captureTitle">Add a moment</h2><span class="quiet">A note can be enough.</span></div>
+            <form id="entryForm">
+              <input type="hidden" id="editingId">
+              <label for="entryNote">What happened or what you noticed?</label>
+              <textarea id="entryNote" rows="3" placeholder="A few words are enough" required></textarea>
+              <div class="time-row"><div><label for="entryDate">Date</label><input id="entryDate" type="date" required></div><div><label for="entryTime">Time</label><input id="entryTime" type="time" required></div><div><label for="timeQuality">Time certainty</label><select id="timeQuality"><option value="exact">Exact</option><option value="approximate">Approximate</option><option value="uncertain">Uncertain</option></select></div></div>
+              <fieldset class="tag-field"><legend>Tags <span class="quiet">optional</span></legend><div id="tagChoices" class="tag-choices"></div></fieldset>
+              <div class="form-actions"><button class="primary-button" id="saveEntry" type="submit">Save moment</button><button class="text-button hidden" id="cancelEdit" type="button">Cancel edit</button></div>
+            </form>
+            <div id="pausePrompt" class="pause-prompt hidden" role="status"><div><strong>Pause and choose</strong><p>What would help right now? You can leave this for later.</p></div><button id="dismissPrompt" type="button" aria-label="Dismiss pause prompt">×</button></div>
+          </section>
+          <section class="timeline-panel" aria-labelledby="timelineTitle">
+            <div class="timeline-heading"><div><p class="eyebrow">Day timeline</p><h2 id="timelineTitle">Moments</h2></div><input id="timelineDate" type="date" aria-label="Timeline date"></div>
+            <p class="timeline-note">Entries stay as you wrote them. Corrections are kept in each moment’s history.</p>
+            <div id="timeline" class="timeline"></div>
+          </section>
+        </div>
+      </section>
+      <section id="reviewView" class="view hidden">
+        <div class="section-intro"><div><p class="eyebrow">When you have space</p><h2>Review without rewriting</h2><p>Separate what you observed from what you felt, inferred, and chose. Only include what you select in a Capability Lab summary.</p></div><input id="reviewDate" type="date" aria-label="Review date"></div>
+        <div id="reviewList" class="review-list"></div>
+        <section class="card summary-card"><div class="card-top"><h2>Reviewed summary</h2><span class="quiet">Manual export only</span></div><p>Select reviewed moments above. This summary is generated only when you choose to download it.</p><button class="primary-button" id="downloadSummary" type="button">Download selected summary</button><p id="summaryStatus" class="status" role="status"></p></section>
+      </section>
+      <section id="dataView" class="view hidden"><div class="section-intro"><div><p class="eyebrow">Your data</p><h2>Stored in this browser</h2><p>No account or background sync. Anyone with access to this browser profile may be able to see its local data.</p></div></div><div class="data-grid"><section class="card"><h3>Keep a copy</h3><p>Export all moments, reviews, and correction histories as a JSON file. Keep the file somewhere private.</p><button class="secondary-button" id="exportAll" type="button">Export all data</button></section><section class="card"><h3>Restore a copy</h3><p>Choose an earlier Upstream JSON export. You’ll review the file before it replaces this browser’s data.</p><label class="secondary-button file-button" for="importFile">Choose backup file</label><input id="importFile" class="visually-hidden" type="file" accept="application/json,.json"></section><section class="card danger-card"><h3>Delete local data</h3><p>Remove every moment and review from this browser. Export first if you want to keep a copy.</p><button class="danger-button" id="deleteAll" type="button">Delete all data</button></section></div><p id="dataStatus" class="status" role="status"></p></section>
+    </main>
+  </div>
+  <dialog id="deleteDialog"><form method="dialog"><h2>Delete all local data?</h2><p>This removes every entry, review, and edit history from this browser. This cannot be undone here.</p><div class="dialog-actions"><button value="cancel" class="secondary-button">Cancel</button><button value="confirm" class="danger-button">Delete all</button></div></form></dialog>
+  <dialog id="importDialog"><form method="dialog"><h2>Restore this backup?</h2><p id="importPreview"></p><p>This replaces all entries and reviews currently stored in this browser. Export your current data first if you want to keep it.</p><div class="dialog-actions"><button value="cancel" class="secondary-button">Cancel</button><button value="confirm" class="primary-button">Replace and restore</button></div></form></dialog>
+  <script src="app.js"></script>
+</body>
+</html>
